@@ -171,29 +171,6 @@ describe('AppContext', () => {
   });
 
   describe('User Actions', () => {
-    //it('should login user', () => {
-    //  const { result } = renderHook(() => useAppContext(), {
-    //    wrapper: AppProvider,
-    //  });
-//
-    //  const userData = {
-    //    id: 'user1',
-    //    name: 'Test User',
-    //    email: 'test@test.com',
-    //    profilePic: 'pic.jpg',
-    //    bio: 'Test bio',
-    //  };
-//
-    //  act(() => {
-    //    result.current.loginUser(userData);
-    //  });
-//
-    //  expect(result.current.currentUser).toEqual(userData);
-    //  expect(localStorageMock.setItem).toHaveBeenCalledWith(
-    //    'artemis_user',
-    //    JSON.stringify(userData)
-    //  );
-    //});
 
     it('should logout user', async () => {
       const { result } = renderHook(() => useAppContext(), {
@@ -264,39 +241,6 @@ describe('AppContext', () => {
         aperture: 'f/2.8',
       },
     };
-
-    //it('should add photo', async () => {
-    //  api.createPhoto.mockResolvedValue(mockPhoto);
-//
-    //  const { result } = renderHook(() => useAppContext(), {
-    //    wrapper: AppProvider,
-    //  });
-//
-    //  act(() => {
-    //    result.current.loginUser(mockUser);
-    //  });
-//
-    //  await waitFor(() => {
-    //    expect(result.current.loadingImages).toBe(false);
-    //  });
-//
-    //  await act(async () => {
-    //    await result.current.addPhoto({
-    //      title: 'Test Photo',
-    //      description: 'Test description',
-    //      imageUrl: 'data:image/png;base64,test',
-    //      moonPhase: 50,
-    //      location: { lat: 28.4636, lng: -16.2518 },
-    //      camera: 'Canon',
-    //      lens: '50mm',
-    //      iso: '800',
-    //      exposure: '1/100',
-    //      aperture: 'f/2.8',
-    //    });
-    //  });
-//
-    //  expect(result.current.photos).toContainEqual(mockPhoto);
-    //});
 
     it('should delete photo', async () => {
       api.fetchPhotos.mockResolvedValue([mockPhoto]);
@@ -463,32 +407,6 @@ describe('AppContext', () => {
       likes: [],
       comments: [],
     };
-
-    //it('should add post', async () => {
-    //  api.createPost.mockResolvedValue(mockPost);
-//
-    //  const { result } = renderHook(() => useAppContext(), {
-    //    wrapper: AppProvider,
-    //  });
-//
-    //  act(() => {
-    //    result.current.loginUser(mockUser);
-    //  });
-//
-    //  await waitFor(() => {
-    //    expect(result.current.loadingPosts).toBe(false);
-    //  });
-//
-    //  await act(async () => {
-    //    await result.current.addPost({
-    //      title: 'Test Post',
-    //      description: 'Test description',
-    //      photos: [],
-    //    });
-    //  });
-//
-    //  expect(result.current.posts).toContainEqual(mockPost);
-    //});
 
     it('should delete post', async () => {
       api.fetchPosts.mockResolvedValue([mockPost]);
