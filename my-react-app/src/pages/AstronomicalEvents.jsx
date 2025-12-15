@@ -1,9 +1,10 @@
-
 import { SunCalc } from "../three-app/suncalc.js";
 import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import NextEclipseButton from "../components/next-eclipse-button/NextEclipseButton.jsx";
+import { useAppContext } from "../AppContext.jsx";
 
 import {
   Box,
@@ -34,36 +35,38 @@ const getPhaseEmoji = (phase) => {
 };
 
 const getPhaseName = (phase) => {
-  if (phase < 0.03) return "LUNA NUEVA";
-  if (phase < 0.22) return "CRECIENTE";
-  if (phase < 0.28) return "CUARTO CRECIENTE";
-  if (phase < 0.47) return "GIBOSA CRECIENTE";
-  if (phase < 0.53) return "LUNA LLENA";
-  if (phase < 0.72) return "GIBOSA MENGUANTE";
-  if (phase < 0.78) return "CUARTO MENGUANTE";
-  if (phase < 0.97) return "MENGUANTE";
-  return "LUNA NUEVA";
+  if (phase < 0.03) return "NEW MOON";
+  if (phase < 0.22) return "WAXING CRESCENT";
+  if (phase < 0.28) return "FIRST QUARTER";
+  if (phase < 0.47) return "WAXING GIBBOUS";
+  if (phase < 0.53) return "FULL MOON";
+  if (phase < 0.72) return "WANING GIBBOUS";
+  if (phase < 0.78) return "LAST QUARTER";
+  if (phase < 0.97) return "WANING CRESCENT";
+  return "NEW MOON";
 };
 
 function AstronomicalEvents() {
+  const { latitudeState, longitudeState } = useAppContext();
   const [selectedDate, setSelectedDate] = useState(null);
   const [moonData, setMoonData] = useState(null);
   const [open, setOpen] = useState(false);
   const [events, setEvents] = useState([]);
 
-  const lat = 40.4168; // Madrid
-  const lon = -3.7038;
+  const lat = latitudeState || 40.4168; // Madrid by default
+  const lon = longitudeState || -3.7038;
 
-  // Cargar fases lunares del mes
+  // Cargar fases lunares de los próximos 365 días
   useEffect(() => {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
     const moonEvents = [];
 
-    for (let i = 1; i <= daysInMonth; i++) {
-      const date = new Date(year, month, i, 12, 0, 0);
+    // Generar eventos para los próximos 365 días desde hoy
+    for (let i = 0; i < 365; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      date.setHours(12, 0, 0, 0);
+      
       const isoDate = date.toISOString().split("T")[0];
       const illumination = SunCalc.getMoonIllumination(date);
       const emoji = getPhaseEmoji(illumination.phase);
@@ -72,7 +75,7 @@ function AstronomicalEvents() {
         title: emoji,
         date: isoDate,
         display: "background",
-        classNames: ["moon-event"]
+        classNames: ["moon-event"],
       });
     }
 
@@ -82,23 +85,33 @@ function AstronomicalEvents() {
   const handleDateClick = (info) => {
     const dateStr = info.dateStr;
     const date = new Date(dateStr + "T12:00:00");
-    
+
     setSelectedDate(dateStr);
-    
-    // Calcular datos de la luna usando SunCalc
+
+    // Calculate moon data using SunCalc
     const illumination = SunCalc.getMoonIllumination(date);
     const position = SunCalc.getMoonPosition(date, lat, lon);
     const times = SunCalc.getMoonTimes(date, lat, lon);
-    
+
     const moonInfo = {
       phase: illumination.phase,
       phaseName: getPhaseName(illumination.phase),
       illumination: (illumination.fraction * 100).toFixed(1),
-      moonrise: times.rise ? times.rise.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-      moonset: times.set ? times.set.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-      distance: Math.round(position.distance)
+      moonrise: times.rise
+        ? times.rise.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "N/A",
+      moonset: times.set
+        ? times.set.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "N/A",
+      distance: Math.round(position.distance),
     };
-    
+
     setMoonData(moonInfo);
     setOpen(true);
   };
@@ -109,18 +122,46 @@ function AstronomicalEvents() {
   };
 
   return (
-    <Box sx={{ p: 3, backgroundColor: "#f5f5f5", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "flex-start" }}>
-      <Paper sx={{ p: 3, width: "100%", maxWidth: 900, borderRadius: 3, backgroundColor: "white" }} elevation={3}>
-        <Typography variant="h5" fontWeight="bold" mb={2}>
-          Calendario de Efemérides Astronómicas
-        </Typography>
+    <Box
+      sx={{
+        p: 3,
+        backgroundColor: "#f5f5f5",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+      }}
+    >
+      <Paper
+        sx={{
+          p: 3,
+          width: "100%",
+          maxWidth: 900,
+          borderRadius: 3,
+          backgroundColor: "white",
+        }}
+        elevation={3}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h5" fontWeight="bold">
+            Astronomical Events Calendar
+          </Typography>
+          <NextEclipseButton lat={lat} lng={lon} />
+        </Box>
         <Typography variant="body2" color="text.secondary" mb={3}>
-          Cada día muestra su fase lunar. Pulsa sobre cualquier día para ver información detallada.
+          Each day shows its moon phase. Click on any day to see detailed information.
         </Typography>
 
         <style>
           {`
-            /* Efecto hover para los días del calendario */
+            /* Hover effect for calendar days */
             .fc-daygrid-day:hover {
               background-color: #e3f2fd !important;
               cursor: pointer;
@@ -139,7 +180,7 @@ function AstronomicalEvents() {
               position: relative;
             }
 
-            /* Estilo para los emojis de luna en la esquina superior izquierda */
+            /* Style for moon emojis in top left corner */
             .fc-bg-event.moon-event {
               background: transparent !important;
               border: none !important;
@@ -158,12 +199,12 @@ function AstronomicalEvents() {
               filter: none !important;
             }
 
-            /* Forzar opacidad completa en todos los elementos del evento */
+            /* Force full opacity on all event elements */
             .fc-bg-event.moon-event * {
               opacity: 1 !important;
             }
 
-            /* Asegurar que el número del día esté visible */
+            /* Ensure day number is visible */
             .fc-daygrid-day-top {
               position: relative;
               z-index: 2;
@@ -175,15 +216,23 @@ function AstronomicalEvents() {
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           height="auto"
-          locale="es"
+          locale="en"
           events={events}
-          headerToolbar={{ left: "prev,next today", center: "title", right: "" }}
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "",
+          }}
           dateClick={handleDateClick}
           displayEventTime={false}
         />
 
-        <Dialog open={open} onClose={handleClose} TransitionComponent={Transition}>
-          <DialogTitle>Fase lunar del {selectedDate}</DialogTitle>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          TransitionComponent={Transition}
+        >
+          <DialogTitle>Moon Phase for {selectedDate}</DialogTitle>
           <DialogContent
             sx={{
               backgroundColor: "white",
@@ -192,21 +241,23 @@ function AstronomicalEvents() {
           >
             {moonData ? (
               <Box sx={{ p: 1 }}>
-                <Typography variant="h3">{getPhaseEmoji(moonData.phase)}</Typography>
+                <Typography variant="h3">
+                  {getPhaseEmoji(moonData.phase)}
+                </Typography>
                 <Typography variant="h6" mb={1}>
                   {moonData.phaseName.replace(/_/g, " ")}
                 </Typography>
                 <Typography>
-                  <strong>Salida de la luna:</strong> {moonData.moonrise}
+                  <strong>Moonrise:</strong> {moonData.moonrise}
                 </Typography>
                 <Typography>
-                  <strong>Puesta de la luna:</strong> {moonData.moonset}
+                  <strong>Moonset:</strong> {moonData.moonset}
                 </Typography>
                 <Typography>
-                  <strong>Distancia:</strong> {moonData.distance} km
+                  <strong>Distance:</strong> {moonData.distance} km
                 </Typography>
                 <Typography sx={{ mt: 1 }}>
-                  <strong>Iluminación:</strong> {moonData.illumination}%
+                  <strong>Illumination:</strong> {moonData.illumination}%
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -215,7 +266,7 @@ function AstronomicalEvents() {
                 />
               </Box>
             ) : (
-              <Typography>No hay datos disponibles para esta fecha.</Typography>
+              <Typography>No data available for this date.</Typography>
             )}
           </DialogContent>
         </Dialog>
