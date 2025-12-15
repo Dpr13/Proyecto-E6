@@ -49,7 +49,7 @@ vi.mock('@mui/material', () => ({
   Typography: ({ children, ...props }) => <div {...props}>{children}</div>,
   Paper: ({ children, ...props }) => <div {...props}>{children}</div>,
   Dialog: ({ open, children, onClose }) => 
-    open ? <div data-testid="dialog" onClick={onClose}>{children}</div> : null,
+    open ? <div data-testid="dialog" onClick={() => onClose()}>{children}</div> : null,
   DialogTitle: ({ children }) => <div data-testid="dialog-title">{children}</div>,
   DialogContent: ({ children, ...props }) => <div data-testid="dialog-content" {...props}>{children}</div>,
   LinearProgress: ({ value }) => <div data-testid="linear-progress" data-value={value}></div>,
